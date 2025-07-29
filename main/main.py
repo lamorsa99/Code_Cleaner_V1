@@ -11,7 +11,7 @@ class LineNumberArea(QPlainTextEdit):
         super().__init__()
         self.editor = editor
         self.setReadOnly(True)
-        self.setMaximumWidth(40)
+        self.setMaximumWidth(45)
         self.setFont(QFont("Courier", 10))
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -39,9 +39,14 @@ class CodeCleaner(QWidget):
         self.editor.setFont(QFont("Courier", 10))
         self.line_numbers = LineNumberArea(self.editor)
         self.editor.textChanged.connect(self.update_line_numbers)
+        self.editor.textChanged.connect(self.update_line_count)  # Nueva conexión
         code_layout.addWidget(self.line_numbers)
         code_layout.addWidget(self.editor)
         layout.addLayout(code_layout)
+
+        # Etiqueta para mostrar la cantidad de líneas
+        self.line_count_label = QLabel("Líneas totales: 0")
+        layout.addWidget(self.line_count_label)
 
         self.clean_btn = QPushButton("Clean Code")
         self.clean_btn.clicked.connect(self.clean_code)
@@ -58,10 +63,16 @@ class CodeCleaner(QWidget):
         layout.addWidget(self.copy_btn)
 
         self.update_line_numbers()
+        self.update_line_count()  # Inicializa el contador
 
     def update_line_numbers(self):
         self.line_numbers.update_numbers()
         self.line_numbers.verticalScrollBar().setValue(self.editor.verticalScrollBar().value())
+
+    def update_line_count(self):
+        text = self.editor.toPlainText()
+        lines = text.split('\n')
+        self.line_count_label.setText(f"Líneas totales: {len(lines)}")
 
     def clean_code(self):
         code = self.editor.toPlainText()
