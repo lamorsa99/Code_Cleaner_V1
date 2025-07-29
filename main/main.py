@@ -1,15 +1,16 @@
 import sys
 import re
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QHBoxLayout, QVBoxLayout, QPlainTextEdit, QPushButton, QLabel, QFrame, QSizePolicy
+    QApplication, QWidget, QHBoxLayout, QVBoxLayout, QPlainTextEdit, QPushButton, QLabel, QFrame, QSizePolicy, QTextEdit, QLineEdit
 )
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QTextCursor, QTextCharFormat, QColor, QPainter
 from PyQt6.QtCore import Qt
 
 class LineNumberArea(QPlainTextEdit):
-    def __init__(self, editor):
+    def __init__(self, editor, parent_widget=None):
         super().__init__()
         self.editor = editor
+        self.parent_widget = parent_widget
         self.setReadOnly(True)
         self.setMaximumWidth(55)
         self.setFont(QFont("Consolas", 11))
@@ -17,14 +18,96 @@ class LineNumberArea(QPlainTextEdit):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setStyleSheet("background-color: #f5f5f5; color: #888; border: none;")
         self.editor.verticalScrollBar().valueChanged.connect(self.sync_scroll)
+        self.editor.blockCountChanged.connect(self.update_numbers)
+        self.editor.updateRequest.connect(self.update_numbers)
+        self.clicked_line = None
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QPainter(self.viewport())
+        font_metrics = self.fontMetrics()
+        block = self.editor.document().firstBlock()
+        block_number = 0
+
+        while block.isValid():
+            rect = self.editor.blockBoundingGeometry(block).translated(
+                self.editor.contentOffset()
+            )
+            top = int(rect.top())
+            y = top + font_metrics.ascent()
+            highlighted = False
+            if self.parent_widget:
+                if self.editor is self.parent_widget.editor:
+                    highlighted = block_number in self.parent_widget.highlighted_lines
+                elif self.editor is self.parent_widget.output:
+                    highlighted = block_number in self.parent_widget.highlighted_output_lines
+            x_x = 4  # margen izquierdo
+            if highlighted:
+                painter.setPen(QColor(200, 0, 0))
+                painter.drawText(x_x, y, "❌")
+                number_x = x_x + font_metrics.horizontalAdvance("❌") + 6
+            else:
+                number_x = x_x
+            painter.setPen(QColor(136, 136, 136))
+            painter.drawText(number_x, y, str(block_number + 1))
+            block = block.next()
+            block_number += 1
 
     def sync_scroll(self, value):
         self.verticalScrollBar().setValue(value)
 
-    def update_numbers(self):
-        block_count = self.editor.blockCount()
-        numbers = "\n".join(str(i+1) for i in range(block_count))
-        self.setPlainText(numbers)
+    def update_numbers(self, *args):
+        self.update()
+        self.setFixedHeight(self.editor.viewport().height())
+
+    def mousePressEvent(self, event):
+        y = event.position().y()
+        editor = self.editor
+        block = editor.firstVisibleBlock()
+        block_number = block.blockNumber()
+        top = editor.blockBoundingGeometry(block).translated(editor.contentOffset()).top()
+        bottom = top + editor.blockBoundingRect(block).height()
+
+        while block.isValid() and top <= y:
+            if top <= y <= bottom:
+                break
+            block = block.next()
+            top = bottom
+            bottom = top + editor.blockBoundingRect(block).height()
+            block_number = block.blockNumber()
+
+        line = block_number
+
+        font_metrics = self.fontMetrics()
+        rect = editor.blockBoundingGeometry(block).translated(editor.contentOffset())
+        x_x = 4  # La X está a la izquierda
+        if self.parent_widget:
+            highlighted = False
+            if editor is self.parent_widget.editor:
+                highlighted = line in self.parent_widget.highlighted_lines
+            elif editor is self.parent_widget.output:
+                highlighted = line in self.parent_widget.highlighted_output_lines
+            if highlighted:
+                rect_x = x_x
+                rect_y = int(rect.top())
+                rect_w = font_metrics.horizontalAdvance("❌") + 4
+                rect_h = font_metrics.height()
+                if (rect_x <= event.position().x() <= rect_x + rect_w and
+                    rect_y <= y <= rect_y + rect_h):
+                    if editor is self.parent_widget.editor:
+                        self.parent_widget.toggle_highlight_line(line)
+                    elif editor is self.parent_widget.output:
+                        self.parent_widget.toggle_highlight_output_line(line)
+                    return
+        if self.parent_widget:
+            if editor is self.parent_widget.editor:
+                self.parent_widget.toggle_highlight_line(line)
+            elif editor is self.parent_widget.output:
+                self.parent_widget.toggle_highlight_output_line(line)
+        super().mousePressEvent(event)
+
+    def wheelEvent(self, event):
+        event.ignore()
 
 class CodeCleaner(QWidget):
     def __init__(self):
@@ -57,6 +140,14 @@ class CodeCleaner(QWidget):
                 font-size: 13px;
                 border: 1px solid #b0b0b0;
             }
+            QLineEdit {
+                background: #fff;
+                color: #222;
+                border-radius: 4px;
+                border: 1px solid #b0b0b0;
+                padding: 2px 6px;
+                font-size: 13px;
+            }
         """)
 
         main_layout = QVBoxLayout(self)
@@ -68,13 +159,30 @@ class CodeCleaner(QWidget):
         title.setStyleSheet("font-size: 24px; margin-bottom: 10px; color: #1976d2;")
         main_layout.addWidget(title)
 
-        # Layout horizontal para los dos cuadros principales
         editors_layout = QHBoxLayout()
         editors_layout.setSpacing(18)
 
         # --- Cuadro izquierdo: Código sucio ---
         left_layout = QVBoxLayout()
         left_layout.addWidget(QLabel("Código original:"))
+
+        range_layout = QHBoxLayout()
+        self.from_box = QLineEdit()
+        self.from_box.setPlaceholderText("from")
+        self.from_box.setFixedWidth(50)
+        self.to_box = QLineEdit()
+        self.to_box.setPlaceholderText("to")
+        self.to_box.setFixedWidth(50)
+        self.select_btn = QPushButton("Select")
+        self.select_btn.setFixedWidth(60)
+        self.unselect_btn = QPushButton("Desmarcar")
+        self.unselect_btn.setFixedWidth(80)
+        range_layout.addWidget(self.from_box)
+        range_layout.addWidget(self.to_box)
+        range_layout.addWidget(self.select_btn)
+        range_layout.addWidget(self.unselect_btn)
+        range_layout.addStretch()
+        left_layout.addLayout(range_layout)
 
         code_frame = QFrame()
         code_frame.setFrameShape(QFrame.Shape.StyledPanel)
@@ -86,7 +194,10 @@ class CodeCleaner(QWidget):
         self.editor = QPlainTextEdit()
         self.editor.setFont(QFont("Consolas", 11))
         self.editor.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.line_numbers = LineNumberArea(self.editor)
+        self.editor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
+        self.editor.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.editor.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.line_numbers = LineNumberArea(self.editor, self)
         self.editor.textChanged.connect(self.update_line_numbers)
         self.editor.textChanged.connect(self.update_line_count)
         code_layout.addWidget(self.line_numbers)
@@ -119,7 +230,10 @@ class CodeCleaner(QWidget):
         self.output.setFont(QFont("Consolas", 11))
         self.output.setReadOnly(True)
         self.output.setStyleSheet("background-color: #f5f5f5; color: #1976d2; border-radius: 6px;")
-        self.output_line_numbers = LineNumberArea(self.output)
+        self.output.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
+        self.output.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.output.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.output_line_numbers = LineNumberArea(self.output, self)
         self.output.textChanged.connect(self.update_output_line_numbers)
         output_layout.addWidget(self.output_line_numbers)
         output_layout.addWidget(self.output)
@@ -141,6 +255,12 @@ class CodeCleaner(QWidget):
         self.update_line_count()
         self.update_output_line_numbers()
         self.update_output_line_count()
+
+        self.highlighted_lines = set()
+        self.highlighted_output_lines = set()
+
+        self.select_btn.clicked.connect(self.select_lines_range)
+        self.unselect_btn.clicked.connect(self.unselect_lines_range)
 
     def update_line_numbers(self):
         self.line_numbers.update_numbers()
@@ -175,6 +295,93 @@ class CodeCleaner(QWidget):
         if result:
             clipboard = QApplication.clipboard()
             clipboard.setText(result)
+
+    def toggle_highlight_line(self, line_number):
+        if line_number in self.highlighted_lines:
+            self.highlighted_lines.remove(line_number)
+        else:
+            self.highlighted_lines.add(line_number)
+        self.highlight_line()
+        self.line_numbers.update()
+
+    def toggle_highlight_output_line(self, line_number):
+        if line_number in self.highlighted_output_lines:
+            self.highlighted_output_lines.remove(line_number)
+        else:
+            self.highlighted_output_lines.add(line_number)
+        self.highlight_output_line()
+        self.output_line_numbers.update()
+
+    def highlight_line(self):
+        extraSelections = []
+        for line_number in self.highlighted_lines:
+            selection = QTextEdit.ExtraSelection()
+            line_color = QColor(255, 102, 102, 100)
+            selection.format.setBackground(line_color)
+            selection.format.setProperty(QTextCharFormat.Property.FullWidthSelection, True)
+            cursor = self.editor.textCursor()
+            cursor.movePosition(QTextCursor.MoveOperation.Start)
+            cursor.movePosition(QTextCursor.MoveOperation.Down, QTextCursor.MoveMode.MoveAnchor, line_number)
+            cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+            selection.cursor = cursor
+            extraSelections.append(selection)
+        self.editor.setExtraSelections(extraSelections)
+
+    def highlight_output_line(self):
+        extraSelections = []
+        for line_number in self.highlighted_output_lines:
+            selection = QTextEdit.ExtraSelection()
+            line_color = QColor(255, 102, 102, 100)
+            selection.format.setBackground(line_color)
+            selection.format.setProperty(QTextCharFormat.Property.FullWidthSelection, True)
+            cursor = self.output.textCursor()
+            cursor.movePosition(QTextCursor.MoveOperation.Start)
+            cursor.movePosition(QTextCursor.MoveOperation.Down, QTextCursor.MoveMode.MoveAnchor, line_number)
+            cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+            selection.cursor = cursor
+            extraSelections.append(selection)
+        self.output.setExtraSelections(extraSelections)
+
+    def select_lines_range(self):
+        from_line = self.from_box.text()
+        to_line = self.to_box.text()
+        if not from_line or not to_line:
+            return
+        try:
+            from_line = int(from_line) - 1
+            to_line = int(to_line) - 1
+            if from_line < 0 or to_line < 0 or to_line < from_line:
+                return
+        except ValueError:
+            return
+
+        self.highlighted_lines.update(range(from_line, to_line + 1))  # <-- Acumula rangos
+        self.highlight_line()
+        self.line_numbers.update()
+
+        cursor = self.editor.textCursor()
+        cursor.movePosition(QTextCursor.MoveOperation.Start)
+        cursor.movePosition(QTextCursor.MoveOperation.Down, QTextCursor.MoveMode.MoveAnchor, from_line)
+        self.editor.setTextCursor(cursor)
+        self.editor.ensureCursorVisible()
+
+    def unselect_lines_range(self):
+        from_line = self.from_box.text()
+        to_line = self.to_box.text()
+        if not from_line or not to_line:
+            return
+        try:
+            from_line = int(from_line) - 1
+            to_line = int(to_line) - 1
+            if from_line < 0 or to_line < 0 or to_line < from_line:
+                return
+        except ValueError:
+            return
+
+        for line in range(from_line, to_line + 1):
+            self.highlighted_lines.discard(line)
+        self.highlight_line()
+        self.line_numbers.update()
 
 def main():
     app = QApplication(sys.argv)
