@@ -5,54 +5,61 @@ class StyleManager:
     def get_main_style():
         return """
             QWidget {
-                background-color: #f7fafd;
+                background-color: #f8fafc;
             }
             QLabel {
                 font-size: 16px;
-                color: #222;
+                color: #2d3748;
+                font-family: 'Segoe UI', Arial, sans-serif;
             }
             QPushButton {
-                background-color: #e3e6ee;
-                color: #222;
-                border-radius: 8px;
-                padding: 10px 22px;
-                font-size: 15px;
-                border: 1px solid #b0b0b0;
+                background-color: #e2e8f0;
+                color: #2d3748;
+                border-radius: 0px;
+                padding: 12px 24px;
+                font-size: 14px;
+                font-weight: 600;
+                border: 1px solid #000000;
+                font-family: 'Segoe UI', Arial, sans-serif;
             }
             QPushButton:hover {
-                background-color: #d0d6e0;
+                background-color: #cbd5e0;
             }
             QPlainTextEdit {
-                background-color: #f9f9fb;
-                color: #222;
-                border-radius: 8px;
-                font-size: 14px;
-                border: 1px solid #b0b0b0;
+                background-color: #ffffff;
+                color: #2d3748;
+                border-radius: 0px;
+                font-size: 13px;
+                border: 1px solid #000000;
+                font-family: 'Consolas', 'Monaco', monospace;
             }
             QLineEdit {
-                background: #fff;
-                color: #222;
-                border-radius: 6px;
-                border: 1px solid #b0b0b0;
-                padding: 4px 10px;
-                font-size: 14px;
+                background: #ffffff;
+                color: #2d3748;
+                border-radius: 0px;
+                border: 1px solid #000000;
+                padding: 8px 12px;
+                font-size: 13px;
+                font-family: 'Segoe UI', Arial, sans-serif;
             }
             QGroupBox {
-                border: 2px solid #e0e0e0;
-                border-radius: 14px;
-                margin-top: 8px;
-                margin-bottom: 4px;
-                margin-left: 2px;
-                margin-right: 2px;
-                background: #fff;
-                padding-top: 18px;
+                border: 1px solid #000000;
+                border-radius: 0px;
+                margin-top: 12px;
+                margin-bottom: 6px;
+                margin-left: 3px;
+                margin-right: 3px;
+                background: #ffffff;
+                padding-top: 20px;
+                font-family: 'Segoe UI', Arial, sans-serif;
             }
             QGroupBox:title {
-                color: #1976d2;
-                font-size: 18px;
+                color: #1a365d;
+                font-size: 16px;
                 font-weight: bold;
-                left: 16px;
-                top: 8px;
+                left: 20px;
+                top: 12px;
+                font-family: 'Segoe UI', Arial, sans-serif;
             }
         """
 
@@ -61,7 +68,7 @@ class StyleManager:
         return """
             QDialog {
                 background-color: #f7fafd;
-                border-radius: 12px;
+                border-radius: 0px;
             }
             QLabel {
                 color: #222;
@@ -71,11 +78,11 @@ class StyleManager:
             QPushButton {
                 background-color: #1976d2;
                 color: white;
-                border-radius: 8px;
+                border-radius: 0px;
                 padding: 10px 20px;
                 font-size: 16px;
                 font-weight: bold;
-                border: none;
+                border: 1px solid #000000;
             }
             QPushButton:hover {
                 background-color: #1565c0;
@@ -86,7 +93,7 @@ class StyleManager:
             }
             QWidget#content {
                 background-color: #fff;
-                border-radius: 10px;
-                border: 1px solid #e0e0e0;
+                border-radius: 0px;
+                border: 1px solid #000000;
             }
         """

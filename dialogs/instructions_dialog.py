@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
     QScrollArea, QWidget, QApplication
 )
 from PyQt6.QtCore import Qt
-from ..styles.style_manager import StyleManager
+from styles.style_manager import StyleManager
 
 class InstructionsDialog(QDialog):
     def __init__(self, parent=None):
@@ -14,8 +14,8 @@ class InstructionsDialog(QDialog):
     
     def _setup_dialog(self):
         """Configura las propiedades básicas del diálogo"""
-        self.setWindowTitle("📖 Code Cleaner V1 - Instructions")
-        self.setFixedSize(600, 500)
+        self.setWindowTitle("📖 Code Cleaner V1 - Quick Start Guide")
+        self.setFixedSize(650, 550)  # Ligeramente más grande para mejor legibilidad
         self.setModal(True)
         self.setStyleSheet(StyleManager.get_dialog_style())
         self._center_dialog()
@@ -29,54 +29,97 @@ class InstructionsDialog(QDialog):
 
     def _create_title(self, layout):
         """Crea el título principal"""
-        title = QLabel("🧹 <b>Welcome to Code Cleaner V1!</b>")
+        title = QLabel("🧹 <b>Code Cleaner V1</b> - <i>Quick Start Guide</i>")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("font-size: 24px; color: #1976d2; margin-bottom: 10px;")
+        title.setStyleSheet("""
+            font-size: 20px; 
+            color: #1e3a8a; 
+            margin-bottom: 6px;
+            font-weight: bold;
+            padding: 6px 12px;
+            background-color: #f8fafc;
+            border: 1px solid #000000;
+            border-radius: 0px;
+            font-family: 'Segoe UI', 'Calibri', Arial, sans-serif;
+        """)
         layout.addWidget(title)
 
     def _create_instructions_content(self):
-        """Retorna las instrucciones como lista de tuplas"""
+        """Retorna las instrucciones como lista de tuplas - Versión mejorada y más concisa"""
         return [
-            ("🎯 <b>Purpose:</b>", "This tool helps you clean code by removing comments and empty lines, and allows you to mark specific lines as errors for tracking."),
-            ("📝 <b>How to Use:</b>", ""),
-            ("1️⃣ <b>Add Code:</b>", "• Paste your code in the left editor (Original Code)\n• Only Ctrl+V or Shift+Insert are allowed for pasting\n• You cannot type directly in the editor"),
-            ("2️⃣ <b>Select Error Lines:</b>", "• Click on line numbers to mark/unmark error lines\n• Use 'from' and 'to' boxes to select a range of lines\n• Click 'Select' to mark the range or 'Unselect' to clear all selections\n• Selected lines will be highlighted in red with ❌ markers"),
-            ("3️⃣ <b>Clean Code:</b>", "• Click '🧼 Clean Code' to process your code\n• Comments (//, /* */) and empty lines will be removed\n• The cleaned code appears in the right panel\n• Error lines are automatically mapped to the cleaned code"),
-            ("4️⃣ <b>Review Results:</b>", "• Check the statistics at the bottom of each panel:\n  - Left: Total Lines, Selected Lines\n  - Right: Clean Lines, Deleted Lines, Errors Found\n• Errors Found shows how many of your marked lines appear in the cleaned code"),
-            ("5️⃣ <b>Copy Results:</b>", "• Click '📋 Copy Result' to copy the cleaned code to clipboard"),
-            ("🧽 <b>Additional Features:</b>", "• '🗑️ Clear Code' - Clears the original code editor\n• Line numbers with ❌ can be clicked to toggle error marking\n• Real-time statistics update as you work"),
-            ("💡 <b>Tips:</b>", "• Mark lines with potential bugs or issues before cleaning\n• The tool preserves your error markings across the cleaning process\n• Use this for code review and bug tracking workflows")
+            ("🧹 Code Cleaner", "Removes comments & empty lines while preserving error tracking."),
+            
+            ("� Quick Start", ""),
+            ("📥 1. Add Code", "Paste code (Ctrl+V) in the left panel. Direct typing is disabled."),
+            ("🎯 2. Mark Errors", "Click line numbers or use from/to boxes + Select button to mark problematic lines."),
+            ("🧼 3. Clean", "Hit 'Clean Code' button. Comments and empty lines disappear, errors stay tracked."),
+            ("📋 4. Copy", "Use 'Copy Result' to get your cleaned code."),
+            
+            ("📊 Understanding Statistics", ""),
+            ("📈 Left Panel", "• Total Lines: Original code line count\n• Selected Lines: How many lines you marked as errors"),
+            ("📉 Right Panel", "• Clean Lines: Final code line count\n• Deleted Lines: How many lines were removed\n• Errors Found: Your marked errors in clean code"),
+            
+            ("💡 Pro Tips", ""),
+            ("⚡ Efficiency", "• Mark error lines BEFORE cleaning for better tracking\n• Use range selection (from/to) for multiple lines\n• Real-time stats help you understand the cleaning impact"),
+            ("� Workflow", "• Perfect for code reviews and bug documentation\n• Preserves your error tracking through the cleaning process\n• Great for preparing code for presentations or documentation")
         ]
 
     def _create_scroll_content(self, layout):
         """Crea el contenido scrolleable con las instrucciones"""
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         
         content_widget = QWidget()
         content_widget.setObjectName("content")
         content_layout = QVBoxLayout(content_widget)
-        content_layout.setSpacing(12)
-        content_layout.setContentsMargins(20, 20, 20, 20)
+        content_layout.setSpacing(8)  # Reducido de 12 a 8
+        content_layout.setContentsMargins(15, 15, 15, 15)  # Reducido de 20 a 15
         
         # Agregar instrucciones
         for title_text, desc_text in self._create_instructions_content():
             section_title = QLabel(title_text)
-            section_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #1976d2; margin-top: 5px;")
+            section_title.setStyleSheet("""
+                font-size: 15px; 
+                font-weight: bold; 
+                color: #1e40af; 
+                margin-top: 3px;
+                padding: 4px 8px;
+                background-color: #dbeafe;
+                border: 1px solid #000000;
+                border-radius: 0px;
+            """)
             content_layout.addWidget(section_title)
             
             if desc_text:
                 section_desc = QLabel(desc_text)
                 section_desc.setWordWrap(True)
-                section_desc.setStyleSheet("font-size: 14px; color: #333; margin-left: 10px; margin-bottom: 8px;")
+                section_desc.setStyleSheet("""
+                    font-size: 13px; 
+                    color: #374151; 
+                    margin-left: 8px; 
+                    margin-bottom: 6px;
+                    padding: 6px;
+                    background-color: #f8fafc;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 0px;
+                """)
                 content_layout.addWidget(section_desc)
         
         # Nota final
         note = QLabel("🚀 <b>Ready to start?</b> Close this dialog and begin cleaning your code!")
         note.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        note.setStyleSheet("font-size: 16px; color: #ff9800; margin-top: 15px; padding: 10px; background-color: #fff3e0; border-radius: 8px; border: 1px solid #ffcc02;")
+        note.setStyleSheet("""
+            font-size: 15px; 
+            color: #16a34a; 
+            font-weight: bold;
+            margin-top: 10px; 
+            padding: 8px; 
+            background-color: #dcfce7; 
+            border-radius: 0px; 
+            border: 1px solid #000000;
+        """)
         content_layout.addWidget(note)
         
         content_layout.addStretch()
@@ -90,16 +133,35 @@ class InstructionsDialog(QDialog):
         self.dont_show_again = QPushButton("✅ Don't show again")
         self.dont_show_again.setStyleSheet("""
             QPushButton {
-                background-color: #ff9800;
-                color: white;
+                background-color: #fee2e2;
+                color: #991b1b;
+                font-weight: bold;
+                font-size: 12px;
+                padding: 8px 16px;
+                border: 1px solid #000000;
+                border-radius: 0px;
             }
             QPushButton:hover {
-                background-color: #f57c00;
+                background-color: #fca5a5;
             }
         """)
         self.dont_show_again.clicked.connect(self.dont_show_clicked)
         
         close_btn = QPushButton("🚀 Start Using Code Cleaner")
+        close_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #dcfce7;
+                color: #166534;
+                font-weight: bold;
+                font-size: 12px;
+                padding: 8px 16px;
+                border: 1px solid #000000;
+                border-radius: 0px;
+            }
+            QPushButton:hover {
+                background-color: #bbf7d0;
+            }
+        """)
         close_btn.clicked.connect(self.accept)
         
         button_layout.addWidget(self.dont_show_again)
@@ -110,8 +172,8 @@ class InstructionsDialog(QDialog):
     def _create_content(self):
         """Crea todo el contenido del diálogo"""
         layout = QVBoxLayout(self)
-        layout.setSpacing(15)
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(10)  # Reducido de 15 a 10
+        layout.setContentsMargins(15, 15, 15, 15)  # Reducido de 20 a 15
         
         self._create_title(layout)
         self._create_scroll_content(layout)

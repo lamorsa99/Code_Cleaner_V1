@@ -37,28 +37,78 @@ class CodeCleaner(QWidget):
         """Crea el título principal"""
         title = QLabel("🧹 <b>Code Cleaner V1</b>")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("font-size: 28px; margin-bottom: 8px; color: #1976d2;")
+        title.setStyleSheet("""
+            font-size: 28px; 
+            margin-bottom: 15px; 
+            color: #1e3a8a;
+            font-weight: bold;
+            padding: 12px 20px;
+            background-color: #f8fafc;
+            border: 1px solid #000000;
+            border-radius: 0px;
+            font-family: 'Segoe UI', 'Calibri', Arial, sans-serif;
+        """)
         return title
 
     def _create_range_inputs(self):
         """Crea los inputs para selección de rango"""
         inputs_group = QGroupBox()
-        inputs_group.setStyleSheet("QGroupBox { border: none; background: transparent; }")
+        inputs_group.setStyleSheet("""
+            QGroupBox { 
+                border: 1px solid #000000; 
+                border-radius: 0px; 
+                background: transparent; 
+                margin: 2px;
+            }
+        """)
+        inputs_group.setFixedHeight(90)  # Aumenté de 80 a 90 para más espacio
         inputs_layout = QHBoxLayout(inputs_group)
+        inputs_layout.setContentsMargins(8, 8, 8, 8)  # Márgenes ajustados
+        inputs_layout.setSpacing(10)  # Espaciado entre elementos
         
         self.from_box = QLineEdit()
         self.from_box.setPlaceholderText("from")
         self.from_box.setFixedWidth(60)
+        self.from_box.setFixedHeight(35)  # Aumenté de 30 a 35 para mejor visualización
         
         self.to_box = QLineEdit()
         self.to_box.setPlaceholderText("to")
         self.to_box.setFixedWidth(60)
+        self.to_box.setFixedHeight(35)  # Aumenté de 30 a 35 para mejor visualización
         
         self.select_btn = QPushButton("Select")
         self.select_btn.setFixedWidth(100)
+        self.select_btn.setFixedHeight(35)  # Aumenté de 30 a 35 para mejor visualización
+        self.select_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #dbeafe;
+                color: #1e40af;
+                font-weight: bold;
+                font-size: 12px;
+                padding: 5px;
+                border: 1px solid #93c5fd;
+            }
+            QPushButton:hover {
+                background-color: #93c5fd;
+            }
+        """)
         
         self.unselect_btn = QPushButton("Unselect")
         self.unselect_btn.setFixedWidth(110)
+        self.unselect_btn.setFixedHeight(35)  # Aumenté de 30 a 35 para mejor visualización
+        self.unselect_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #f3f4f6;
+                color: #374151;
+                font-weight: bold;
+                font-size: 12px;
+                padding: 5px;
+                border: 1px solid #d1d5db;
+            }
+            QPushButton:hover {
+                background-color: #d1d5db;
+            }
+        """)
         
         inputs_layout.addStretch()
         inputs_layout.addWidget(self.from_box)
@@ -72,7 +122,15 @@ class CodeCleaner(QWidget):
     def _create_editor_with_line_numbers(self, is_readonly=False):
         """Crea un editor con números de línea"""
         editor_group = QGroupBox()
-        editor_group.setStyleSheet("QGroupBox { border: 1.5px solid #e0e0e0; border-radius: 8px; margin-top: 0px; background: #f5f7fa; }")
+        editor_group.setStyleSheet("""
+            QGroupBox { 
+                border: 1px solid #000000; 
+                border-radius: 0px; 
+                margin-top: 0px; 
+                background: #f8fafc; 
+                padding: 8px;
+            }
+        """)
         editor_group_layout = QVBoxLayout(editor_group)
         editor_group_layout.setContentsMargins(2, 2, 2, 2)
         editor_group_layout.setSpacing(0)
@@ -105,7 +163,8 @@ class CodeCleaner(QWidget):
     def _create_stats_layout(self, labels_data):
         """Crea un layout de estadísticas con labels"""
         stats_layout = QHBoxLayout()
-        stats_layout.setContentsMargins(10, 4, 10, 4)
+        stats_layout.setContentsMargins(15, 12, 15, 12)  # Aumenté los márgenes para más espacio
+        stats_layout.setSpacing(15)  # Aumenté el espaciado entre elementos
         
         labels = []
         for i, (text, style, alignment) in enumerate(labels_data):
@@ -126,11 +185,33 @@ class CodeCleaner(QWidget):
 
     def _create_left_card(self):
         """Crea la tarjeta izquierda (Original Code)"""
-        left_card = QGroupBox("Original Code")
+        left_card = QGroupBox("📝 Original Code")
         left_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        left_card.setStyleSheet("""
+            QGroupBox {
+                font-size: 16px;
+                font-weight: bold;
+                color: #1e40af;
+                border: 1px solid #000000;
+                border-radius: 0px;
+                margin-top: 15px;
+                padding-top: 10px;
+                background-color: #fefefe;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 8px 0 8px;
+                background-color: #dbeafe;
+                border: 1px solid #000000;
+                border-radius: 0px;
+                color: #1e40af;
+                font-weight: bold;
+            }
+        """)
         left_card_layout = QVBoxLayout(left_card)
-        left_card_layout.setSpacing(6)
-        left_card_layout.setContentsMargins(6, 6, 6, 6)
+        left_card_layout.setSpacing(8)  # Aumenté el espaciado de 6 a 8
+        left_card_layout.setContentsMargins(8, 8, 8, 8)  # Márgenes más generosos
 
         # Inputs de selección
         left_card_layout.addWidget(self._create_range_inputs())
@@ -140,9 +221,9 @@ class CodeCleaner(QWidget):
         
         # Estadísticas
         stats_data = [
-            ("Total Lines: 0", "color: #1976d2; font-weight: bold; font-size: 16px;", "left"),
+            ("Total Lines: 0", "color: #2563eb; font-weight: bold; font-size: 14px; padding: 4px 8px; background-color: #eff6ff; border: 1px solid #bfdbfe;", "left"),
             ("", "", "center"),
-            ("Selected Lines: 0", "color: #ff9800; font-weight: bold; font-size: 16px;", "right")
+            ("Selected Lines: 0", "color: #dc2626; font-weight: bold; font-size: 14px; padding: 4px 8px; background-color: #fef2f2; border: 1px solid #fecaca;", "right")
         ]
         stats_layout, stats_labels = self._create_stats_layout(stats_data)
         self.line_count_label = stats_labels[0]
@@ -151,18 +232,52 @@ class CodeCleaner(QWidget):
         self.empty_label.setMinimumWidth(120)
         
         editor_group.layout().addLayout(stats_layout)
-        left_card_layout.addWidget(editor_group, stretch=2)
+        left_card_layout.addWidget(editor_group, stretch=3)  # Reducido de 10 a 3
 
         # Botones
         buttons_group = QGroupBox()
-        buttons_group.setStyleSheet("QGroupBox { border: none; background: transparent; }")
+        buttons_group.setStyleSheet("""
+            QGroupBox { 
+                border: 1px solid #000000; 
+                border-radius: 0px; 
+                background: transparent; 
+                margin: 2px;
+            }
+        """)
+        buttons_group.setFixedHeight(80)  # Aumenté de 70 a 80 para más espacio
         buttons_layout = QHBoxLayout(buttons_group)
+        buttons_layout.setContentsMargins(5, 5, 5, 5)  # Márgenes más pequeños para más espacio
+        buttons_layout.setSpacing(5)  # Espaciado reducido entre botones
         
         self.clear_btn = QPushButton("🗑️ Clear Code")
         self.clean_btn = QPushButton("🧼 Clean Code")
         
-        for btn in [self.clear_btn, self.clean_btn]:
-            btn.setStyleSheet("margin-bottom: 10px;")
+        # Los botones ocuparán todo el espacio disponible verticalmente
+        self.clear_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.clean_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        
+        # Estilos específicos para los botones
+        self.clear_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #fee2e2;
+                color: #991b1b;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #fca5a5;
+            }
+        """)
+        
+        self.clean_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #dbeafe;
+                color: #1e40af;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #93c5fd;
+            }
+        """)
         
         buttons_layout.addWidget(self.clear_btn)
         buttons_layout.addWidget(self.clean_btn)
@@ -172,20 +287,42 @@ class CodeCleaner(QWidget):
 
     def _create_right_card(self):
         """Crea la tarjeta derecha (Clean Code)"""
-        right_card = QGroupBox("Clean Code")
+        right_card = QGroupBox("✨ Clean Code")
         right_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        right_card.setStyleSheet("""
+            QGroupBox {
+                font-size: 16px;
+                font-weight: bold;
+                color: #16a34a;
+                border: 1px solid #000000;
+                border-radius: 0px;
+                margin-top: 15px;
+                padding-top: 10px;
+                background-color: #fefefe;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 8px 0 8px;
+                background-color: #dcfce7;
+                border: 1px solid #000000;
+                border-radius: 0px;
+                color: #16a34a;
+                font-weight: bold;
+            }
+        """)
         right_card_layout = QVBoxLayout(right_card)
-        right_card_layout.setSpacing(6)
-        right_card_layout.setContentsMargins(6, 6, 6, 6)
+        right_card_layout.setSpacing(8)  # Aumenté el espaciado de 6 a 8
+        right_card_layout.setContentsMargins(8, 8, 8, 8)  # Márgenes más generosos
 
         # Editor con números de línea (readonly)
         output_group, self.output, self.output_line_numbers = self._create_editor_with_line_numbers(is_readonly=True)
         
         # Estadísticas
         stats_data = [
-            ("Clean Lines: 0", "color: #388e3c; font-weight: bold; font-size: 16px;", "left"),
-            ("Deleted Lines: 0", "color: #d32f2f; font-weight: bold; font-size: 16px;", "center"),
-            ("Errors Found: 0", "color: #ff9800; font-weight: bold; font-size: 16px;", "right")
+            ("Clean Lines: 0", "color: #16a34a; font-weight: bold; font-size: 14px; padding: 4px 8px; background-color: #f0fdf4; border: 1px solid #bbf7d0;", "left"),
+            ("Deleted Lines: 0", "color: #dc2626; font-weight: bold; font-size: 14px; padding: 4px 8px; background-color: #fef2f2; border: 1px solid #fecaca;", "center"),
+            ("Errors Found: 0", "color: #d97706; font-weight: bold; font-size: 14px; padding: 4px 8px; background-color: #fffbeb; border: 1px solid #fed7aa;", "right")
         ]
         stats_layout, stats_labels = self._create_stats_layout(stats_data)
         self.output_line_count_label = stats_labels[0]
@@ -193,32 +330,59 @@ class CodeCleaner(QWidget):
         self.errors_label = stats_labels[2]
         
         output_group.layout().addLayout(stats_layout)
-        right_card_layout.addWidget(output_group, stretch=2)
+        right_card_layout.addWidget(output_group, stretch=3)  # Reducido de 10 a 3
 
         # Botón copiar
+        copy_container = QGroupBox()
+        copy_container.setStyleSheet("""
+            QGroupBox { 
+                border: 1px solid #000000; 
+                border-radius: 0px; 
+                background: transparent; 
+                margin: 2px;
+            }
+        """)
+        copy_container.setFixedHeight(80)  # Aumenté de 60 a 80 para más espacio
+        copy_layout = QHBoxLayout(copy_container)
+        copy_layout.setContentsMargins(5, 5, 5, 5)  # Márgenes más pequeños para más espacio
+        copy_layout.setSpacing(5)  # Espaciado reducido
+        
         self.copy_btn = QPushButton("📋 Copy Result")
-        right_card_layout.addWidget(self.copy_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+        # El botón ocupará todo el espacio disponible
+        self.copy_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.copy_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #dcfce7;
+                color: #166534;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #bbf7d0;
+            }
+        """)
+        copy_layout.addWidget(self.copy_btn)
+        right_card_layout.addWidget(copy_container)
 
         return right_card
 
     def _setup_ui(self):
         """Configura toda la interfaz de usuario"""
         main_layout = QVBoxLayout(self)
-        main_layout.setSpacing(8)
-        main_layout.setContentsMargins(5, 5, 5, 5)
+        main_layout.setSpacing(12)  # Aumenté el espaciado de 8 a 12
+        main_layout.setContentsMargins(10, 10, 10, 10)  # Márgenes más generosos
 
         # Título
         main_layout.addWidget(self._create_title())
 
         # Editores
         editors_layout = QHBoxLayout()
-        editors_layout.setSpacing(8)
-        editors_layout.setContentsMargins(0, 0, 0, 0)
+        editors_layout.setSpacing(12)  # Aumenté el espaciado entre editores
+        editors_layout.setContentsMargins(5, 5, 5, 5)  # Pequeños márgenes
 
         editors_layout.addWidget(self._create_left_card(), stretch=1)
         editors_layout.addWidget(self._create_right_card(), stretch=1)
 
-        main_layout.addLayout(editors_layout, stretch=15)
+        main_layout.addLayout(editors_layout, stretch=10)  # Reducido de 15 a 10
 
     def _connect_signals(self):
         """Conecta todas las señales"""
@@ -276,6 +440,9 @@ class CodeCleaner(QWidget):
 
     def clean_code(self):
         code = self.editor.toPlainText()
+        if not code.strip():
+            return
+            
         cleaned, self.mapa_limpio_a_original = CodeProcessor.clean_code(code)
         
         self.highlighted_output_lines.clear()
